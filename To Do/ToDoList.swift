@@ -1,5 +1,5 @@
 //
-//  TodoList.swift
+//  ToDoList.swift
 //  To Do
 //
 //  Created by Marcos Calvo Garcia on 13/11/2020.
@@ -9,14 +9,8 @@ import UIKit
 
 class ToDoList: UITableViewController {
     
-    private let fileURL: URL = {
-        let documentDirectoryURLs = FileManager.default.urls(
-            for: .documentDirectory, in: .userDomainMask)
-        let documentDirectoryURL = documentDirectoryURLs.first!
-        return documentDirectoryURL.appendingPathComponent("todolist.items")
-    }()
-    
-    fileprivate var items: [ToDoItem] = []
+    private var items: [ToDoItem] = []
+    var delegate : TodoListenerImpl? = nil
     
     func add(_ item: ToDoItem) {
         items.append(item)
@@ -38,6 +32,11 @@ class ToDoList: UITableViewController {
         if let encoded = try? encoder.encode(items) {
             UserDefaults.standard.set(encoded, forKey: "todo_items")
         }
+    }
+    
+    func editItem(_ todoItem: ToDoItem, cellForRowAt indexPath: IndexPath) {
+        items[indexPath.row] = todoItem
+        saveItems()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { return items.count
@@ -74,5 +73,16 @@ class ToDoList: UITableViewController {
             saveItems()
         }
     }
+    
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let closeAction = UIContextualAction(style: .normal, title:  "action_edit".localized, handler: { (ac:UIContextualAction, view:UIView, success:(Bool) -> Void) in
+            self.delegate?.editItem(self.items[indexPath.row], cellForRowAt: indexPath)
+            success(true)
+        })
+       
+        closeAction.backgroundColor = .systemBlue
+    
+        return UISwipeActionsConfiguration(actions: [closeAction])
+     }
 
 }

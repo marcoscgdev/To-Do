@@ -7,50 +7,67 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, TodoListenerImpl {
     
-    @IBOutlet var tableView: UITableView!
     
-    let toDoList = ToDoList()
+    @IBOutlet private var tableView: UITableView!
+    
+    private let toDoList = ToDoList()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "To Do"
+        self.title = "app_name".localized
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(ViewController.didTapAddItemButton(_:)))
         
         toDoList.loadItems()
+        toDoList.delegate = self
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.dataSource = toDoList
         tableView.delegate = toDoList
     }
     
-    @objc func didTapAddItemButton(_ sender: UIBarButtonItem) {
-            // Create an alert
-            let alert = UIAlertController(
-                title: "New item",
-                message: "Insert the title of the new item:",
-                preferredStyle: .alert)
+    @objc private func didTapAddItemButton(_ sender: UIBarButtonItem) {
+        let alert = UIAlertController(
+            title: "new_item_title".localized,
+            message: "new_item_description".localized,
+            preferredStyle: .alert)
 
-            // Add a text field to the alert for the new item's title
-            alert.addTextField(configurationHandler: nil)
+        alert.addTextField(configurationHandler: nil)
+        alert.addAction(UIAlertAction(title: "action_cancel".localized, style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "action_ok".localized, style: .default, handler: { (_) in
+            if let title = alert.textFields?[0].text {
+                self.addNewItem(title)
+            }
+        }))
 
-            // Add a "cancel" button to the alert. This one doesn't need a handler
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-
-            // Add a "OK" button to the alert. The handler calls addNewToDoItem()
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
-                if let title = alert.textFields?[0].text {
-                    self.addNewItem(title)
-                }
-            }))
-
-            // Present the alert to the user
-            self.present(alert, animated: true, completion: nil)
-        }
+        self.present(alert, animated: true, completion: nil)
+    }
     
-    @IBAction func addNewItem(_ title: String?) {
+    func editItem(_ todoItem: ToDoItem, cellForRowAt indexPath: IndexPath) {
+        let alert = UIAlertController(
+            title: "edit_item_title".localized,
+            message: "edit_item_description".localized,
+            preferredStyle: .alert)
+
+        alert.addTextField(configurationHandler: nil)
+        alert.addAction(UIAlertAction(title: "action_cancel".localized, style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "action_ok".localized, style: .default, handler: { (_) in
+            if let title = alert.textFields?[0].text {
+                todoItem.title = title
+                self.toDoList.editItem(todoItem, cellForRowAt: indexPath)
+                
+                self.tableView.reloadData()
+            }
+        }))
+
+        self.present(alert, animated: true, completion: nil)
+        
+        alert.textFields?[0].text = todoItem.title
+    }
+    
+    private func addNewItem(_ title: String?) {
         guard let todo = title else { return }
         
         toDoList.add(ToDoItem(todo))

@@ -1,0 +1,20 @@
+/* 
+  Localizable.strings
+  To Do
+
+  Created by Marcos Calvo Garcia on 13/01/2021.
+  
+*/
+
+"app_name" = "To DO";
+
+"action_edit" = "Edit";
+"action_delete" = "Delete";
+"action_ok" = "OK";
+"action_cancel" = "Cancel";
+
+"new_item_title" = "New item";
+"new_item_description" = "Insert the title of the new item:";
+
+"edit_item_title" = "Edit item";
+"edit_item_description" = "Insert the new title for the item:";
